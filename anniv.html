@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hadiah Anniversary</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap');
+
+    body {
+      background-color: #FDFBF7;
+      color: #4A3B3E;
+      overflow-x: hidden;
+    }
+
+    /* Fonts */
+    .font-serif { font-family: 'Playfair Display', serif; }
+    .font-sans { font-family: 'Lora', serif; }
+
+    /* Selection colors */
+    ::selection {
+      background-color: #FADDE1;
+      color: #7A1E33;
+    }
+
+    /* Fade-in Scroll Animations */
+    .fade-in-section {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+      will-change: opacity, visibility;
+    }
+    .fade-in-section.is-visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* Floating Hearts Animation */
+    @keyframes float {
+      0% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+    .floating-heart {
+      position: fixed;
+      bottom: -10vh;
+      animation: float 4s ease-in forwards;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    /* Shake Error Animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+    }
+    .animate-shake {
+      animation: shake 0.4s ease-in-out;
+    }
+
+    /* Polaroid Cards */
+    .polaroid {
+      background: white;
+      padding: 0.75rem 0.75rem 2.5rem 0.75rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      transition: all 0.3s ease;
+    }
+    .polaroid:hover {
+      transform: scale(1.05) rotate(0deg) !important;
+      z-index: 10;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+
+    /* 3D Flip Card Styles for Minigame */
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; }
+    .backface-hidden { backface-visibility: hidden; }
+    .rotate-y-180 { transform: rotateY(180deg); }
+
+    /* Custom entrance animation for gatekeeper */
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-in-up {
+      animation: slideInUp 1s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <div id="view-login" class="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+    <div id="login-box" class="max-w-sm w-full bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#FADDE1] transition-all duration-300">
+      <div class="flex justify-center mb-6">
+        <i data-lucide="lock" class="w-10 h-10 text-[#9A2A44]"></i>
+      </div>
+      <h1 class="font-serif text-2xl text-[#7A1E33] mb-2">Welcome Sweetheart</h1>
+      <p class="font-sans text-[#A67B83] text-sm mb-6">Tebak pin</p>
+
+      <div class="flex justify-center gap-4 mb-4 h-6 items-center" id="pin-indicators">
+        <div class="w-4 h-4 rounded-full bg-[#FADDE1] transition-all duration-300 pin-dot" id="dot-1"></div>
+        <div class="w-4 h-4 rounded-full bg-[#FADDE1] transition-all duration-300 pin-dot" id="dot-2"></div>
+        <div class="w-4 h-4 rounded-full bg-[#FADDE1] transition-all duration-300 pin-dot" id="dot-3"></div>
+        <div class="w-4 h-4 rounded-full bg-[#FADDE1] transition-all duration-300 pin-dot" id="dot-4"></div>
+      </div>
+
+      <div class="h-6 mb-4">
+        <p id="pin-error-text" class="text-red-400 text-xs font-sans animate-pulse hidden">PIN salah, coba lagi sayang.</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 max-w-[250px] mx-auto">
+        <button onclick="handlePinPress('1')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">1</button>
+        <button onclick="handlePinPress('2')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">2</button>
+        <button onclick="handlePinPress('3')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">3</button>
+        <button onclick="handlePinPress('4')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">4</button>
+        <button onclick="handlePinPress('5')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">5</button>
+        <button onclick="handlePinPress('6')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">6</button>
+        <button onclick="handlePinPress('7')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">7</button>
+        <button onclick="handlePinPress('8')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">8</button>
+        <button onclick="handlePinPress('9')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">9</button>
+        <div class="w-16 h-16 mx-auto"></div>
+        <button onclick="handlePinPress('0')" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] font-serif text-2xl hover:bg-[#FADDE1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9A2A44]/50">0</button>
+        <button onclick="handleDelete()" class="w-16 h-16 mx-auto rounded-full bg-[#FEF6F7] text-[#7A1E33] flex items-center justify-center hover:bg-[#FADDE1] transition-colors focus:outline-none">
+          <i data-lucide="delete" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-envelope" class="hidden min-h-screen flex flex-col items-center justify-center p-6 text-center">
+    <div class="max-w-md w-full bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#FADDE1] transform transition-transform hover:scale-105 duration-500">
+      <div class="flex justify-center mb-6">
+        <i data-lucide="heart" class="w-12 h-12 text-[#9A2A44] animate-pulse" fill="#9A2A44"></i>
+      </div>
+      <h1 class="font-serif text-3xl md:text-4xl text-[#7A1E33] mb-4">Hai, Ziaa.</h1>
+      <p class="font-sans text-[#A67B83] text-lg mb-10 leading-relaxed">
+        Terima kasih ya,<br/>
+        udah jadi bagian paling menyenangkan di satu tahun terakhir ini.
+      </p>
+      <button onclick="openEnvelope()" class="group relative inline-flex items-center justify-center px-8 py-3 font-sans font-semibold text-white transition-all duration-300 bg-[#9A2A44] rounded-full hover:bg-[#7A1E33] hover:shadow-lg hover:shadow-[#9a2a44]/30 focus:outline-none">
+        <span class="mr-2">Buka sekarang</span>
+        <i data-lucide="sparkles" class="w-4 h-4 group-hover:animate-spin"></i>
+      </button>
+    </div>
+  </div>
+
+  <div id="view-content" class="hidden relative">
+    
+    <audio id="bg-music" loop>
+      <source src="1.mp3" type="audio/mpeg" />
+    </audio>
+
+    <audio id="playlist-audio-1" src="2.mp3" preload="metadata" data-start-time="0"></audio>
+    <audio id="playlist-audio-2" src="3.mp3" preload="metadata" data-start-time="0"></audio>
+
+    <button onclick="toggleMusic()" class="fixed top-6 right-6 z-50 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-md border border-[#FADDE1] text-[#9A2A44] hover:bg-[#FADDE1]/50 transition-all focus:outline-none" title="Play/Pause Backsound Utama">
+      <i id="music-btn-icon" data-lucide="volume-x" class="w-5 h-5"></i>
+    </button>
+
+    <section class="min-h-[90vh] flex flex-col items-center justify-center p-6 text-center relative">
+      <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-[#FADDE1]/40 to-transparent pointer-events-none"></div>
+      <div class="fade-in-section">
+        <p class="text-[#D48999] tracking-[0.2em] text-sm uppercase font-semibold mb-4 flex items-center justify-center gap-2">
+          <i data-lucide="star" class="w-4 h-4"></i> Chapter 1
+        </p>
+        <h1 class="font-serif text-5xl md:text-7xl text-[#7A1E33] mb-6 leading-tight">
+          One <br/><span class="italic text-[#9A2A44]">Year.</span>
+        </h1>
+        <p class="text-lg md:text-xl text-[#8A6A70] max-w-2xl mx-auto leading-relaxed mb-12">
+          Terima kasih sudah jadi tempat yang nyaman untuk bersandar dan berbagi banyak hal, 
+          dari yang paling penting sampai ke hal random setiap harinya.
+        </p>
+      </div>
+      
+      <div class="fade-in-section" data-delay="300">
+        <div class="bg-white/60 backdrop-blur-md border border-[#FADDE1] rounded-2xl p-6 md:p-8 shadow-sm max-w-3xl mx-auto mt-4">
+          <p class="text-[#8A6A70] mb-4 font-serif italic flex items-center justify-center gap-2">
+            <i data-lucide="clock" class="w-4 h-4"></i> Waktu yang sudah kita lewati bersama:
+          </p>
+          <div class="flex flex-wrap justify-center gap-4 md:gap-8 text-[#7A1E33]">
+            <div class="flex flex-col items-center">
+              <span id="count-days" class="text-4xl md:text-5xl font-serif font-bold">0</span>
+              <span class="text-xs tracking-widest uppercase text-[#D48999] mt-1">Hari</span>
+            </div>
+            <span class="text-3xl md:text-4xl font-serif font-light text-[#FADDE1]">:</span>
+            <div class="flex flex-col items-center">
+              <span id="count-hours" class="text-4xl md:text-5xl font-serif font-bold">0</span>
+              <span class="text-xs tracking-widest uppercase text-[#D48999] mt-1">Jam</span>
+            </div>
+            <span class="text-3xl md:text-4xl font-serif font-light text-[#FADDE1] hidden md:block">:</span>
+            <div class="flex flex-col items-center hidden md:flex">
+              <span id="count-minutes" class="text-4xl md:text-5xl font-serif font-bold">0</span>
+              <span class="text-xs tracking-widest uppercase text-[#D48999] mt-1">Menit</span>
+            </div>
+            <span class="text-3xl md:text-4xl font-serif font-light text-[#FADDE1] hidden md:block">:</span>
+            <div class="flex flex-col items-center hidden md:flex">
+              <span id="count-seconds" class="text-4xl md:text-5xl font-serif font-bold text-[#9A2A44]">0</span>
+              <span class="text-xs tracking-widest uppercase text-[#D48999] mt-1">Detik</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-24 px-6 relative overflow-hidden bg-white/50">
+      <div class="max-w-6xl mx-auto">
+        <div class="fade-in-section text-center mb-20">
+          <h2 class="font-serif text-4xl md:text-5xl text-[#7A1E33] mb-4">Jejak Kita</h2>
+          <p class="text-[#8A6A70] text-lg">Beberapa momen yang membuat cerita kita semakin berarti.</p>
+        </div>
+
+        <div class="relative">
+          <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-[2px] h-full bg-gradient-to-b from-transparent via-[#FADDE1] to-transparent"></div>
+
+          <div class="flex flex-col md:flex-row items-center justify-between mb-24 md:mb-32 relative group">
+            <div class="w-full md:w-[45%] mb-8 md:mb-0 z-10 fade-in-section" data-delay="100">
+              <div class="rounded-3xl overflow-hidden shadow-xl border-8 border-white transform md:rotate-[-3deg] group-hover:rotate-0 transition-all duration-500 hover:scale-[1.02]">
+                <img src="snniv1.jpeg" alt="Kopi" class="w-full aspect-[4/3] object-cover" />
+              </div>
+            </div>
+            <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-10 h-10 bg-white border-4 border-[#FADDE1] rounded-full z-20 items-center justify-center shadow-md">
+              <div class="w-3 h-3 bg-[#9A2A44] rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+            </div>
+            <div class="w-full md:w-[45%] z-10 fade-in-section" data-delay="200">
+              <div class="bg-white p-8 md:p-10 rounded-3xl shadow-lg border border-[#FADDE1]/50 relative">
+                <div class="absolute -top-5 -left-5 bg-[#FEF6F7] p-3 rounded-full text-[#9A2A44] shadow-sm"><i data-lucide="coffee" class="w-6 h-6"></i></div>
+                <h3 class="font-serif text-2xl text-[#7A1E33] mb-4 mt-2">Awal Cerita</h3>
+                <p class="text-[#8A6A70] leading-relaxed text-lg">
+                    Dari yang awalnya cuma tukar kupon, sampai akhirnya selalu menantikan pesan darimu setiap harinya.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row-reverse items-center justify-between mb-24 md:mb-32 relative group">
+            <div class="w-full md:w-[45%] mb-8 md:mb-0 z-10 fade-in-section" data-delay="100">
+              <div class="rounded-3xl overflow-hidden shadow-xl border-8 border-white transform md:rotate-[3deg] group-hover:rotate-0 transition-all duration-500 hover:scale-[1.02]">
+                <img src="anniv2.jpeg" alt="Jalan" class="w-full aspect-[4/3] object-cover" />
+              </div>
+            </div>
+            <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-10 h-10 bg-white border-4 border-[#FADDE1] rounded-full z-20 items-center justify-center shadow-md">
+              <div class="w-3 h-3 bg-[#9A2A44] rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+            </div>
+            <div class="w-full md:w-[45%] z-10 fade-in-section" data-delay="200">
+              <div class="bg-white p-8 md:p-10 rounded-3xl shadow-lg border border-[#FADDE1]/50 relative">
+                <div class="absolute -top-5 -right-5 md:-left-5 bg-[#FEF6F7] p-3 rounded-full text-[#9A2A44] shadow-sm"><i data-lucide="star" class="w-6 h-6"></i></div>
+                <h3 class="font-serif text-2xl text-[#7A1E33] mb-4 mt-2">Akhirnya, Kamu</h3>
+                <p class="text-[#8A6A70] leading-relaxed text-lg">
+                    Momen di mana kamu akhirnya menerima kehadiranku seutuhnya, adalah salah satu titik yang paling aku syukuri sampai hari ini.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row items-center justify-between relative group">
+            <div class="w-full md:w-[45%] mb-8 md:mb-0 z-10 fade-in-section" data-delay="100">
+              <div class="rounded-3xl overflow-hidden shadow-xl border-8 border-white transform md:rotate-[-2deg] group-hover:rotate-0 transition-all duration-500 hover:scale-[1.02]">
+                <img src="anniv3.jpeg" alt="Bergandengan" class="w-full aspect-[4/3] object-cover" />
+              </div>
+            </div>
+            <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-10 h-10 bg-white border-4 border-[#FADDE1] rounded-full z-20 items-center justify-center shadow-md">
+              <div class="w-3 h-3 bg-[#9A2A44] rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+            </div>
+            <div class="w-full md:w-[45%] z-10 fade-in-section" data-delay="200">
+              <div class="bg-white p-8 md:p-10 rounded-3xl shadow-lg border border-[#FADDE1]/50 relative">
+                <div class="absolute -top-5 -left-5 bg-[#FEF6F7] p-3 rounded-full text-[#9A2A44] shadow-sm"><i data-lucide="heart" class="w-6 h-6"></i></div>
+                <h3 class="font-serif text-2xl text-[#7A1E33] mb-4 mt-2">Satu Tahun</h3>
+                <p class="text-[#8A6A70] leading-relaxed text-lg">
+                    Waktu berlalu, dan perasaanku masih sama seperti awal kita memulai. Terima kasih sudah menjadi partner yang suportif, pendengar yang baik, dan tempat yang paling nyaman untuk pulang.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="py-24 px-6 bg-[#FEF6F7] relative border-y border-[#FADDE1]/50">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="fade-in-section mb-10">
+          <i data-lucide="key-round" class="w-12 h-12 text-[#9A2A44] mx-auto mb-4 animate-bounce"></i>
+          <h2 class="font-serif text-3xl md:text-5xl text-[#7A1E33] mb-4">Tebak Gambar</h2>
+          <p class="text-[#8A6A70] text-lg max-w-2xl mx-auto leading-relaxed">
+            Sebelum lanjut membaca, coba selesaikan permainan kecil ini dulu. Temukan pasangan gambar yang sama di balik kartu.
+          </p>
+        </div>
+
+        <div id="game-board" class="fade-in-section grid grid-cols-4 gap-3 md:gap-6 max-w-2xl mx-auto p-4 md:p-8 bg-white rounded-[2rem] shadow-sm border border-[#FADDE1]">
+          </div>
+
+        <div class="fade-in-section mt-8 font-sans font-medium text-[#7A1E33] bg-white inline-block px-6 py-2 rounded-full border border-[#FADDE1] shadow-sm">
+          Selesai: <span id="game-score">0</span> / 4
+        </div>
+      </div>
+    </section>
+
+    <section id="gatekeeper-locked" class="py-40 px-6 flex flex-col items-center justify-center text-center bg-[#FDFBF7]">
+      <i data-lucide="lock" class="w-16 h-16 text-[#FADDE1] mb-6 animate-pulse"></i>
+      <h3 class="font-serif text-3xl text-[#7A1E33] mb-4"> Locked </h3>
+      <p class="text-[#8A6A70] text-lg max-w-md mx-auto">
+        Selesaikan dulu misinya sayang.
+      </p>
+    </section>
+
+    <div id="gatekeeper-unlocked" class="hidden">
+      
+      <section class="py-20 px-6 bg-[#7A1E33] text-white">
+        <div class="max-w-4xl mx-auto">
+          <div class="fade-in-section text-center mb-12">
+            <i data-lucide="disc-3" class="w-12 h-12 text-[#FADDE1] mx-auto mb-4 animate-[spin_10s_linear_infinite]"></i>
+            <h2 class="font-serif text-3xl md:text-4xl mb-4">Nada & Cerita</h2>
+            <p class="text-[#FADDE1]/80">Kumpulan lagu yang seakan selalu punya namamu di dalam setiap liriknya.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div class="fade-in-section" data-delay="100">
+              <div onclick="playPlaylistSong(1)" class="group bg-white/10 backdrop-blur-sm p-4 rounded-2xl flex items-center gap-4 hover:bg-white/20 transition-colors cursor-pointer border border-white/10">
+                <div class="w-16 h-16 rounded-xl bg-gray-300 overflow-hidden flex-shrink-0 relative">
+
+                  <div id="playlist-overlay-1" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i id="playlist-icon-1" data-lucide="play" class="w-6 h-6 text-white fill-white"></i>
+                  </div>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-lg">Risk It All</h4>
+                  <p class="text-[#FADDE1]/70 text-sm">Bruno Mars</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="fade-in-section" data-delay="200">
+              <div onclick="playPlaylistSong(2)" class="group bg-white/10 backdrop-blur-sm p-4 rounded-2xl flex items-center gap-4 hover:bg-white/20 transition-colors cursor-pointer border border-white/10">
+                <div class="w-16 h-16 rounded-xl bg-gray-300 overflow-hidden flex-shrink-0 relative">
+                
+                  <div id="playlist-overlay-2" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i id="playlist-icon-2" data-lucide="play" class="w-6 h-6 text-white fill-white"></i>
+                  </div>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-lg">Those Eyes</h4>
+                  <p class="text-[#FADDE1]/70 text-sm">New West</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <section class="py-32 px-6 bg-[#FEF6F7]">
+        <div class="max-w-4xl mx-auto">
+          <div class="fade-in-section bg-[#7A1E33] rounded-[2.5rem] p-8 md:p-14 shadow-2xl border border-[#9A2A44] transform transition-transform hover:-translate-y-2 duration-500">
+            <div class="text-center mb-10">
+              <i data-lucide="star" class="w-10 h-10 text-white fill-white mx-auto mb-4"></i>
+              <h2 class="font-serif text-3xl md:text-4xl text-white mb-2">Harapan untuk Kita</h2>
+              <p class="text-[#FADDE1]/80">Hal baik yang aku harapkan untuk kita ke depan...</p>
+            </div>
+            <div class="space-y-4" id="harapan-container">
+              </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-24 px-6 overflow-hidden bg-white">
+        <div class="max-w-6xl mx-auto">
+          <div class="fade-in-section text-center mb-16">
+            <h2 class="font-serif text-3xl md:text-5xl text-[#7A1E33] mb-4">Kenangan Kita</h2>
+            <p class="text-[#8A6A70] text-lg">Beberapa momen yang terekam dan selalu layak diingat.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 px-4 md:px-0">
+            <div class="fade-in-section" data-delay="100">
+              <div class="polaroid rotate-[-4deg] md:mt-10">
+                <div class="aspect-square w-full bg-gray-200 overflow-hidden mb-3">
+                  <img src="3.jpeg" alt="" class="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-500" />
+                </div>
+                <p class="font-sans text-center text-[#7A1E33] font-medium text-sm">Photobooth Date 🎞️</p>
+              </div>
+            </div>
+
+            <div class="fade-in-section" data-delay="200">
+              <div class="polaroid rotate-[3deg]">
+                <div class="aspect-square w-full bg-gray-200 overflow-hidden mb-3">
+                  <img src="4.jpeg" alt="" class="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-500" />
+                </div>
+                <p class="font-sans text-center text-[#7A1E33] font-medium text-sm">Random Selfie 📸</p>
+              </div>
+            </div>
+
+            <div class="fade-in-section" data-delay="300">
+              <div class="polaroid rotate-[-2deg] md:mt-16">
+                <div class="aspect-square w-full bg-gray-200 overflow-hidden mb-3">
+                  <img src="1.jpeg" alt="" class="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-500" />
+                </div>
+                <p class="font-sans text-center text-[#7A1E33] font-medium text-sm">Canvas Date 🎨</p>
+              </div>
+            </div>
+
+            <div class="fade-in-section" data-delay="400">
+              <div class="polaroid rotate-[5deg]">
+                <div class="aspect-square w-full bg-gray-200 overflow-hidden mb-3">
+                  <img src="2.jpeg" alt="" class="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-500" />
+                </div>
+                <p class="font-sans text-center text-[#7A1E33] font-medium text-sm">Random selfie 📸</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-40 px-6 flex flex-col items-center justify-center text-center relative border-t border-[#FADDE1]/30 bg-[#FDFBF7]">
+        <div class="fade-in-section">
+          <p class="text-[#A67B83] text-xl md:text-2xl mb-12 max-w-3xl mx-auto italic font-serif leading-relaxed">
+            "Semua yang tertulis di sini baru sebagian kecil dari apa yang kita jalani. Masih ada banyak hal baik di depan yang aku ingin kita lewati bersama."
+          </p>
+          
+          <div class="mt-8 flex flex-col items-center space-y-6">
+            <p class="text-sm text-[#D48999] tracking-[0.3em] uppercase font-semibold">Ada satu hal terakhir</p>
+            <button onclick="triggerSurprise()" class="group relative p-6 rounded-full bg-white shadow-xl border-2 border-[#FADDE1] hover:bg-[#FEF6F7] transition-all duration-500 hover:scale-110 hover:shadow-[#FADDE1] focus:outline-none overflow-hidden">
+              <div class="absolute inset-0 bg-[#FADDE1]/20 group-hover:animate-ping rounded-full"></div>
+              <i data-lucide="heart" class="relative w-10 h-10 text-[#9A2A44] transition-all duration-300 animate-pulse" id="surprise-btn-icon"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div> <footer class="text-center py-10 bg-[#FEF6F7] text-[#A67B83] text-sm">
+      <i data-lucide="heart" class="w-5 h-5 mx-auto mb-3 text-[#D48999]" fill="#D48999"></i>
+      <p>Dibuat secara khusus untuk kamu.</p>
+      <p class="mt-1 font-serif italic tracking-widest">EST. 2026 </p>
+    </footer>
+
+  </div>
+
+  <div id="surprise-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#4A3B3E]/80 backdrop-blur-md">
+    <div class="bg-[#FDFBF7] p-8 md:p-12 rounded-[2.5rem] max-w-xl w-full shadow-2xl relative border-4 border-[#FADDE1] transform scale-100 animate-slide-in-up max-h-[90vh] overflow-y-auto">
+      
+      <button onclick="closeSurprise()" class="absolute top-6 right-6 text-[#A67B83] bg-white p-2 rounded-full hover:text-[#7A1E33] hover:bg-[#FADDE1]/50 transition-colors shadow-sm">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="text-center mb-8">
+        <i data-lucide="gift" class="w-14 h-14 text-[#9A2A44] mx-auto mb-4"></i>
+        <h2 class="font-serif text-4xl text-[#7A1E33]">Terima Kasih</h2>
+      </div>
+
+      <div class="w-full h-48 md:h-56 mb-8 rounded-2xl overflow-hidden shadow-inner relative border-2 border-white">
+        <img src="5.jpeg" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#4A3B3E]/60 via-transparent to-transparent"></div>
+      </div>
+
+      <div class="space-y-5 text-[#6A4B51] leading-relaxed text-base md:text-lg font-sans text-justify md:text-center">
+        <p>
+          Terima kasih untuk satu tahun yang penuh makna ini. Sudah menerima kekuranganku dan menjadikanku versi yang lebih baik.
+        </p>
+        <p>
+          Perjalanan kita ke depan mungkin tidak selalu mudah, tapi aku bersyukur dan percaya karena orang yang berjalan bersamaku itu adalah kamu. Mari kita lewati lebih banyak hal bersama-sama lagi.
+        </p>
+        <div class="pt-6 border-t border-[#FADDE1]/50 mt-6">
+          <p class="font-serif font-bold text-[#7A1E33] text-center text-xl md:text-2xl">
+            Selamat hari jadi yang pertama. <br/><span class="italic text-[#9A2A44]">I love you.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hearts-container"></div>
+
+  <script>
+    lucide.createIcons();
+
+    const CORRECT_PIN = '2303'; 
+    const ANNIVERSARY_DATE = '2025-03-23T00:00:00'; 
+
+    let pin = '';
+    let isPlaying = false; 
+    let currentPlaylistSong = null; 
+    let flippedIndices = [];
+    let matchedTypes = [];
+    let gameCards = [];
+
+    const viewLogin = document.getElementById('view-login');
+    const viewEnvelope = document.getElementById('view-envelope');
+    const viewContent = document.getElementById('view-content');
+    const surpriseModal = document.getElementById('surprise-modal');
+    
+    const loginBox = document.getElementById('login-box');
+    const pinErrorText = document.getElementById('pin-error-text');
+    const audio = document.getElementById('bg-music');
+    const musicBtnIcon = document.getElementById('music-btn-icon');
+    const surpriseBtnIcon = document.getElementById('surprise-btn-icon');
+
+    function updatePinUI() {
+      for (let i = 1; i <= 4; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (i <= pin.length) {
+          dot.classList.remove('bg-[#FADDE1]');
+          dot.classList.add('bg-[#9A2A44]', 'scale-110');
+        } else {
+          dot.classList.remove('bg-[#9A2A44]', 'scale-110');
+          dot.classList.add('bg-[#FADDE1]');
+        }
+      }
+    }
+
+    function handlePinPress(digit) {
+      loginBox.classList.remove('animate-shake', 'border-red-300');
+      pinErrorText.classList.add('hidden');
+
+      if (pin.length < 4) {
+        pin += digit;
+        updatePinUI();
+
+        if (pin.length === 4) {
+          if (pin === CORRECT_PIN) {
+            setTimeout(() => {
+              viewLogin.classList.add('hidden');
+              viewEnvelope.classList.remove('hidden');
+            }, 500);
+          } else {
+            loginBox.classList.add('animate-shake', 'border-red-300');
+            pinErrorText.classList.remove('hidden');
+            setTimeout(() => {
+              pin = '';
+              updatePinUI();
+            }, 800);
+          }
+        }
+      }
+    }
+
+    function handleDelete() {
+      pin = pin.slice(0, -1);
+      updatePinUI();
+      loginBox.classList.remove('animate-shake', 'border-red-300');
+      pinErrorText.classList.add('hidden');
+    }
+
+    function openEnvelope() {
+      viewEnvelope.classList.add('hidden');
+      viewContent.classList.remove('hidden');
+      window.scrollTo(0, 0);
+      initIntersectionObserver(); 
+      
+      audio.play().then(() => {
+        isPlaying = true;
+        musicBtnIcon.setAttribute('data-lucide', 'volume-2');
+        musicBtnIcon.classList.add('animate-pulse');
+        lucide.createIcons();
+      }).catch(e => console.log("Autoplay blocked"));
+      
+      initGame(); 
+    }
+
+    function toggleMusic() {
+      if (isPlaying) {
+        audio.pause();
+        musicBtnIcon.setAttribute('data-lucide', 'volume-x');
+        musicBtnIcon.classList.remove('animate-pulse');
+      } else {
+        if (currentPlaylistSong !== null) {
+          const prevAudio = document.getElementById(`playlist-audio-${currentPlaylistSong}`);
+          const prevIcon = document.getElementById(`playlist-icon-${currentPlaylistSong}`);
+          const prevOverlay = document.getElementById(`playlist-overlay-${currentPlaylistSong}`);
+          
+          prevAudio.pause();
+          prevIcon.setAttribute('data-lucide', 'play');
+          prevOverlay.classList.remove('!opacity-100'); 
+          currentPlaylistSong = null;
+        }
+
+        audio.play();
+        musicBtnIcon.setAttribute('data-lucide', 'volume-2');
+        musicBtnIcon.classList.add('animate-pulse');
+      }
+      isPlaying = !isPlaying;
+      lucide.createIcons();
+    }
+
+    // Logika Play Playlist & Start Time
+    function playPlaylistSong(id) {
+      const audioEl = document.getElementById(`playlist-audio-${id}`);
+      const iconEl = document.getElementById(`playlist-icon-${id}`);
+      const overlayEl = document.getElementById(`playlist-overlay-${id}`);
+
+      if (isPlaying) {
+        audio.pause();
+        musicBtnIcon.setAttribute('data-lucide', 'volume-x');
+        musicBtnIcon.classList.remove('animate-pulse');
+        isPlaying = false;
+        lucide.createIcons();
+      }
+
+      if (currentPlaylistSong === id) {
+        if (audioEl.paused) {
+          audioEl.play();
+          iconEl.setAttribute('data-lucide', 'pause');
+          overlayEl.classList.add('!opacity-100'); 
+        } else {
+          audioEl.pause();
+          iconEl.setAttribute('data-lucide', 'play');
+          overlayEl.classList.remove('!opacity-100'); 
+        }
+      } else {
+        if (currentPlaylistSong !== null) {
+          const prevAudio = document.getElementById(`playlist-audio-${currentPlaylistSong}`);
+          const prevIcon = document.getElementById(`playlist-icon-${currentPlaylistSong}`);
+          const prevOverlay = document.getElementById(`playlist-overlay-${currentPlaylistSong}`);
+          
+          prevAudio.pause();
+          prevIcon.setAttribute('data-lucide', 'play');
+          prevOverlay.classList.remove('!opacity-100');
+        }
+        
+        // Atur waktu mulai (start time) jika lagu baru di-play (mulai dari 0 atau awal)
+        if (audioEl.currentTime === 0 || audioEl.paused) {
+            const startTime = parseFloat(audioEl.getAttribute('data-start-time')) || 0;
+            audioEl.currentTime = startTime;
+        }
+
+        audioEl.play();
+        iconEl.setAttribute('data-lucide', 'pause');
+        overlayEl.classList.add('!opacity-100');
+        currentPlaylistSong = id;
+      }
+      lucide.createIcons();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      [1, 2].forEach(id => {
+        const el = document.getElementById(`playlist-audio-${id}`);
+        if(el) {
+          el.addEventListener('ended', () => {
+            document.getElementById(`playlist-icon-${id}`).setAttribute('data-lucide', 'play');
+            document.getElementById(`playlist-overlay-${id}`).classList.remove('!opacity-100');
+            
+            // Kembalikan ke waktu mulai ketika lagu habis
+            const startTime = parseFloat(el.getAttribute('data-start-time')) || 0;
+            el.currentTime = startTime;
+            
+            lucide.createIcons();
+            currentPlaylistSong = null;
+          });
+        }
+      });
+    });
+
+    function updateCounter() {
+      const startDate = new Date(ANNIVERSARY_DATE);
+      const now = new Date();
+      const diff = now - startDate;
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / 1000 / 60) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      
+      document.getElementById('count-days').innerText = Math.max(0, days);
+      document.getElementById('count-hours').innerText = Math.max(0, hours);
+      document.getElementById('count-minutes').innerText = Math.max(0, minutes);
+      document.getElementById('count-seconds').innerText = Math.max(0, seconds);
+    }
+    setInterval(updateCounter, 1000);
+
+    const harapans = [
+      "Tetap menjadi tempat pulang yang paling menenangkan untuk satu sama lain, sesulit apa pun hari yang dilewati.",
+      "Semoga kita selalu terbuka dalam hal komunikasi, dan selalu didasari rasa sabar juga kemauan untuk saling mengerti dalam kondisi apa pun.",
+      "Bisa mewujudkan satu per satu rencana sederhana yang sering kita bicarakan berdua.",
+      "Semoga perasaan ini tidak hanya berhenti pada kata cinta, tapi selalu terus menjadi komitmen yang kuat selamanya."
+    ];
+    document.getElementById('harapan-container').innerHTML = harapans.map(h => `
+      <div class="bg-white/10 rounded-2xl p-4 md:p-5 flex items-center gap-4 hover:bg-white/20 transition-colors">
+        <i data-lucide="sparkles" class="w-5 h-5 text-white flex-shrink-0"></i>
+        <p class="text-white font-medium text-sm md:text-base leading-relaxed">${h}</p>
+      </div>
+    `).join('');
+
+    function initIntersectionObserver() {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const delay = entry.target.getAttribute('data-delay') || 0;
+            setTimeout(() => {
+              entry.target.classList.add('is-visible');
+            }, parseInt(delay));
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      document.querySelectorAll('.fade-in-section').forEach(el => observer.observe(el));
+    }
+
+    function initGame() {
+      const icons = ['coffee', 'music', 'camera', 'star'];
+      gameCards = [...icons, ...icons]
+        .map(type => ({ type, id: Math.random() }))
+        .sort(() => Math.random() - 0.5);
+      
+      const board = document.getElementById('game-board');
+      board.innerHTML = '';
+      
+      gameCards.forEach((card, index) => {
+        const html = `
+          <div class="perspective-1000 aspect-[3/4] cursor-pointer" onclick="handleCardClick(${index})">
+            <div id="card-inner-${index}" class="relative w-full h-full transition-transform duration-500 transform-style-3d hover:scale-105">
+              <div class="absolute inset-0 backface-hidden bg-gradient-to-br from-[#9A2A44] to-[#7A1E33] rounded-xl flex items-center justify-center shadow-md border-2 border-white/20">
+                <i data-lucide="heart" class="w-6 h-6 md:w-8 md:h-8 text-white/50"></i>
+              </div>
+              <div class="absolute inset-0 backface-hidden rotate-y-180 bg-[#FEF6F7] rounded-xl flex items-center justify-center shadow-inner border border-[#FADDE1]">
+                <i data-lucide="${card.type}" class="w-8 h-8 md:w-10 md:h-10 text-[#9A2A44]"></i>
+              </div>
+            </div>
+          </div>
+        `;
+        board.insertAdjacentHTML('beforeend', html);
+      });
+      lucide.createIcons();
+    }
+
+    function setCardFlipped(index, isFlipped) {
+      const el = document.getElementById(`card-inner-${index}`);
+      if (isFlipped) {
+        el.classList.add('rotate-y-180');
+        el.classList.remove('hover:scale-105');
+      } else {
+        el.classList.remove('rotate-y-180');
+        el.classList.add('hover:scale-105');
+      }
+    }
+
+    function handleCardClick(index) {
+      if (flippedIndices.length === 2 || flippedIndices.includes(index) || matchedTypes.includes(gameCards[index].type)) return;
+
+      flippedIndices.push(index);
+      setCardFlipped(index, true);
+
+      if (flippedIndices.length === 2) {
+        const type1 = gameCards[flippedIndices[0]].type;
+        const type2 = gameCards[flippedIndices[1]].type;
+
+        if (type1 === type2) {
+          matchedTypes.push(type1);
+          flippedIndices = [];
+          document.getElementById('game-score').innerText = matchedTypes.length;
+          
+          if (matchedTypes.length === 4) handleGameWin();
+        } else {
+          setTimeout(() => {
+            setCardFlipped(flippedIndices[0], false);
+            setCardFlipped(flippedIndices[1], false);
+            flippedIndices = [];
+          }, 1000);
+        }
+      }
+    }
+
+    function handleGameWin() {
+      setTimeout(() => {
+        spawnHearts(20); 
+        document.getElementById('gatekeeper-locked').classList.add('hidden');
+        const unlocked = document.getElementById('gatekeeper-unlocked');
+        unlocked.classList.remove('hidden');
+        unlocked.classList.add('animate-slide-in-up');
+        initIntersectionObserver(); 
+      }, 600);
+    }
+
+    function spawnHearts(count) {
+      const container = document.getElementById('hearts-container');
+      const colors = ['#e11d48', '#f43f5e', '#fb7185', '#fda4af'];
+      
+      for(let i=0; i<count; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'floating-heart';
+        heart.style.left = (Math.random() * 100) + 'vw';
+        heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+        
+        const size = Math.random() * 20 + 10;
+        heart.innerHTML = `<svg width="${size}px" height="${size}px" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+        
+        container.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+      }
+    }
+
+    function triggerSurprise() {
+      surpriseBtnIcon.classList.remove('animate-pulse');
+      surpriseBtnIcon.classList.add('scale-125');
+      surpriseBtnIcon.setAttribute('fill', '#9A2A44');
+      
+      surpriseModal.classList.remove('hidden');
+      spawnHearts(40);
+    }
+
+    function closeSurprise() {
+      surpriseModal.classList.add('hidden');
+      surpriseBtnIcon.classList.add('animate-pulse');
+      surpriseBtnIcon.classList.remove('scale-125');
+      surpriseBtnIcon.removeAttribute('fill');
+    }
+  </script>
+</body>
+</html>
